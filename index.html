@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Lyn Vue2.0</title>
+</head>
+
+<body>
+  <div id="app">
+    <h3>数据响应式更新</h3>
+
+    <div>姓名：<span>{{ name }}</span></div>
+    <div>性别：<span>{{ gender }}</span></div>
+    <div>事项列表：<span>{{ arr }}</span></div>
+    <h3>methods + computed + 异步更新队列</h3>
+    <div>
+      <p>年龄：{{ counter }}</p>
+      <div>{{ doubleCounter }}</div>
+      <button v-on:click="handleAdd"> Add </button>
+      <button v-on:click="handleMinus"> Minus </button>
+    </div>
+    <h3>v-bind</h3>
+    <span v-bind:title="title">右键审查 title 属性</span>
+    <h3>v-model</h3>
+    <div>
+      你想对我说的话：
+      <input type="text" v-model="inputVal" />
+      <div>{{ inputVal }}</div>
+    </div>
+    <div>
+      是否保存：
+      <input type="checkbox" v-model="isChecked" />
+      <div>{{ isChecked }}</div>
+    </div>
+    <div>
+      请选择满意度：
+      <select v-model="selectValue">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+      <div>{{ selectValue }}</div>
+    </div>
+    <h3>组件</h3>
+    <comp></comp>
+    <h3>插槽</h3>
+    <scope-slot></scope-slot>
+    <scope-slot>
+      <template v-slot:default="scopeSlot">
+        <div>{{ scopeSlot }}</div>
+      </template>
+    </scope-slot>
+  </div>
+</body>
+
+</html>

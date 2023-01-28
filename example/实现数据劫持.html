@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>对象响应式</title>
+  </head>
+  <body>
+    <script>
+      /*使用的是Object.defineProperty*/
+      let data = {
+        name: "张三",
+        age: 19,
+        arr: [1,2,3],
+        nameArr: [{name: '张三'},{name: '李四'},{name: '王五'}]
+      };
+
+      // vue中数组的响应式不是使用Object.defineProperty，而是通过拦截7个操作数组的方式实现的
+      // 备份数组原型对象
+      const arrayProto = Array.prototype;
+      // 通过继承的方式 创建新的 arrayMethdos
+      // 原理
+      // let arr = []
+      // arr -> Array.prototype -> Object.prototype
+      // arr -> 改写的方法  -> Array.prototype -> Object.prototype
+      const arrayMethods = Object.create(arrayProto);
+      // 操作数组的七个方法，只有这七个方法可以改变数组自身
+      const methodsToPatch = [
+        "push",
+        "pop",
+        "shift",
+        "unshift",
+        "splice",
+        "sort",
+        "reverse",
+      ];
+
+      // 改写原型方法, 将原型方法重写，并在这个过程中对每个原型方法进行响应式
+      methodsToPatch.forEach(function (method) {
+        // 缓存原生方法,比如Push，this.arr.push(1,2,3)
+        const original = arrayProto[method];
+        // args是调用方法时传过来的数组
+        arrayMethods[method] = function (...args) {
+          // 执行原生方法
+          const result = original.apply(this, args);
+          console.log(`调用了${method}的拦截方法`);
+          let inserted;
+          switch (method) {
+            case "push":
+            case "unshift":
+              inserted = args;
+              break;
+            case "splice":
+              inserted = args.slice(2);
+              break;
+          }
+          // 对参数每个原型进行响应式
+          for (let i = 0; i < inserted.length; i++) {
+            reactify(inserted[i]);
+          }
+          // 调用原来的方法
+          return result;
+        };
+      });
+
+      // 
+      function defineReactive(data, key, val) {
+        // 如果是对象形式的参数
+        if (typeof val === "object" && val != null && !Array.isArray(val)) {
+          reactify(val);
+        }
+        Object.defineProperty(data, key, {
+          configurable: true,
+          enumerable: true,
+          get() {
+            console.log(`读取${key}属性的`);
+            return val;
+          },
+          set(newVal) {
+            if (newVal === val) {
+              return;
+            }
+            console.log(`设置${key}的属性值为${newVal}`);
+            val = newVal;
+          },
+        });
+      }
+
+      // 
+      function reactify(obj) {
+        let keys = Object.keys(obj);
+        for (let i = 0; i < keys.length; i++) {
+          let key = keys[i];
+          let val = obj[key];
+          // 如果是数组
+          if (Array.isArray(val)) {
+            // 将数组的方法挂载到数组的原型上
+            val.__proto__ = arrayMethods;
+            for (let j = 0; j < val.length; j++) {
+              reactify(val[j]);
+            }
+          } else {
+            defineReactive(obj, key, val);
+          }
+        }
+      }
+
+      reactify(data);
+      console.log(data);
+    </script>
+  </body>
+</html>

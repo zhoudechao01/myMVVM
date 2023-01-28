@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Lyn Vue1.0</title>
+</head>
+
+<body>
+  <div id="app">
+    <h3>数据响应式更新 原理</h3>
+    <div>姓名：{{ name }}</div>
+    <div>年龄：{{ age }}</div>
+    <div>{{ arr }}</div>
+    <h3>methods + 事件 + 数据响应式更新 原理</h3>
+    <div>
+      <p>{{ counter }}</p>
+      <button v-on:click="handleAdd"> Add </button>
+      <button v-on:click="handleMinus"> Minus </button>
+    </div>
+    <h3>v-bind</h3>
+    <span v-bind:title="title">右键审查元素查看我的 title 属性</span>
+    <h3>v-model 原理</h3>
+    <div>
+      <input type="text" v-model="inputVal" />
+      <div>{{ inputVal }}</div>
+    </div>
+    <div>
+      <input type="checkbox" v-model="isChecked">
+      <div>{{ isChecked }}</div>
+    </div>
+    <div>
+      <select v-model="selectValue">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+      <div>{{ selectValue }}</div>
+    </div>
+  </div>
+</body>
+
+</html>

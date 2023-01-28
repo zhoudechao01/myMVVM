@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+  </head>
+  <!-- vue中的原用法 -->
+
+  <body>
+    <div id="app">
+      <p>name: {{ name }}</p>
+      <p>message: {{ message }}</p>
+    </div>
+    <script>
+      // 最开始, 先实现一个简单的功能: 实现 数据的填充
+      /**
+       * 整体流程
+       * mvvm框架结构可分为三部分: 模板/数据/真正的DOM
+       * 模板: 模板是最初时的页面代码, 一直保留在内存中, 不改变
+       * 数据与数据结合生成真正的DOM, 之后再把这个DOM 加到页面中
+       * 而数据变了,即重新生成DOM
+       * 1. 拿到模板
+       * 2. 拿到数据
+       * 3. 数据与模板结合, 生成DOM
+       * 4. 挂载到页面上
+       * **/
+
+      // 即将 data 中数据放置到 模板中对应的 {{content}}里面
+      // 1. 拿到模板: #app
+      let tmpNode = document.querySelector("#app");
+      // 2. 拿到数据: data
+      let data = {
+        name: "张三",
+        message: "吃饭",
+      };
+
+      // 3. 将模板与数据结合, 得到的是 HTML 元素 (DOM元素
+      /** 关键点就是如何处理嵌套的DOM结构*/
+      // 一般都是使用递归
+      // 现在的情况, template 是DOM元素
+      // 但在源码中, 它是由 DOM -> 模板字符串 -> VNode -> 真正的DOM
+      // 我们这里就先不考虑这么多的转换, 先用DOM元素把最基本的元素内容替换后再去
+      // 思考为什么源码要那样做
+      function compiler(template, data) {
+        // 判断子元素是否是文本节点
+        // debugger;
+        let childNodes = template.childNodes;
+        for (let i = 0; i < childNodes.length; i++) {
+          /**判断什么呢?这里先打个断点看看 #app下所有的内容**/
+          /* 可以看到,我们现在的案例中, {{}} 是在text标签下的,那么我们就可以递归去找
+              text标签,然后拿到 {{}} 这个后,再来进行处理
+              * text
+                  data: "{{ message }}"
+                  length: 13
+                  nodeName: "#text"
+                  nodeType: 3
+                  nodeValue: "{{ message }}"
+              * */
+
+          let type = childNodes[i].nodeType;
+          // debugger;
+          if (type === 3) {
+            // 文本
+            let txt = childNodes[i].nodeValue; // 获取到内容
+            // console.log(txt);
+            let reg = /\{\{(.+?)\}\}/g;
+            /** 处理模板字符串内容**/
+            // 获取到{{}}里的内容的正则表达式: /\{\{(.+?)\}\}/g
+            // 然后拿到这个值后就基本上可以去 data中用类似这种data['name']形式去获取值
+            // 然后这里可以用replace来替换
+            txt = txt.replace(reg, function (_, g) {
+              console.log(g,1);
+              let key = g.trim();
+              let value = data[key];
+              return value;
+            });
+            childNodes[i].nodeValue = txt;
+          } else {
+            /** 什么时候递归下一个呢?**/
+            // 在nodeType 里, 为1的话表示元素, 即当 nodeType = 1 时,我们递归
+            compiler(childNodes[i], data);
+          }
+        }
+      }
+
+      // compiler(tmpNode, data);
+
+      // 4. 调用
+      /**不能把最初的tmpNode 传入*/
+      // compiler(tmpNode, data);
+      // 原因: 如果传入tmpNode(即原始包含 {{}}的模板), 在经过compiler后,
+      //      tmpNode里的 {{}}全部被替换掉了, 而若之后数据改变了, 需要更新节点
+      //      那么该如何去找相应的 {{}}呢?
+
+      // 解决方法: 拷贝一份node
+      let generateNode = tmpNode.cloneNode(true); // DOM元素可以通过此克隆
+      compiler(generateNode, data);
+
+      // 放到页面中
+      app.parentNode.replaceChild(generateNode, app);
+
+      /**
+       * 总结: 这是最简单的一个情况, 即把数据与{{}} 结合, 不考虑其他情况
+       * 下一步先从这几个方向升级的点:
+       *    1. vue 使用的是 虚拟DOM, 而我们使用的是真实DOM
+       *    2. 只考虑到了 单属性, 没有考虑 xx.xx.xx....
+       *    3. 封装初步的mvvm框架
+       */
+    </script>
+  </body>
+</html>
